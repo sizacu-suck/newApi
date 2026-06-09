@@ -1,10 +1,12 @@
 using Teacing_api.Models;
-using Microsoft.EntityFrameworkCore;  // ← добавить эту строку
+using Microsoft.EntityFrameworkCore;
 
-var builder = WebApplication.CreateBuilder(args);  // ← CreateBuilder, а не CreateHostBuilder
+var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("hgx8")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddControllers();
 
 var app = builder.Build();
 
