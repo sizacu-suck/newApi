@@ -1,6 +1,18 @@
+@Teacing api_HostAddress = https://localhost:7166
 @Teacing_api_HostAddress = http://localhost:5099
 
-GET {{Teacing_api_HostAddress}}/weatherforecast/
-Accept: application/json
+
+
+POST {{Teacing_api_HostAddress}}/api/products
+Content-Type: application/json
+
+{
+    "name": "Книга",
+    "price": 500
+}
+
+###
+
+GET {{Teacing_api_HostAddress}}/api/products
 
 ###
