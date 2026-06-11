@@ -9,11 +9,11 @@ namespace Teacing_api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CatrgoriesController : ControllerBase
+    public class CategoriesController : ControllerBase
     {
         private readonly AppDbContext _db;
 
-        public CatrgoriesController(AppDbContext db)
+        public CategoriesController(AppDbContext db)
         {
             _db = db;
         }
@@ -36,7 +36,7 @@ namespace Teacing_api.Controllers
         [HttpGet()]
         public async Task<IActionResult> GetAll()
         {
-            var findAll = await _db.Products.AsNoTracking().ToListAsync();
+            var findAll = await _db.Category.AsNoTracking().ToListAsync();
 
             if (!findAll.Any())
             {

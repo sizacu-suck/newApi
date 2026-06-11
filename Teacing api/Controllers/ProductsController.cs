@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Teacing_api.Models;
 using Teacing_api.Validation;
+using Teacing_api.Validation_product;
 
 namespace Teacing_api.Controllers;
 
@@ -20,24 +21,21 @@ public class ProductsController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
+        var products = await _db.Products
+    .Include(p => p.category)
+    .AsNoTracking()
+    .Select(p => new ProductResponseDto
+    {
+        Id = p.Id,
+        Name = p.Name,
+        Price = p.Price,
+        CategoryId = p.CategoryId,
+        CategoryName = p.category != null ? p.category.Name : "Без категории"
+    })
+    .ToListAsync();
 
-        //try
-        //{
-        //    var products = await _db.Products.ToListAsync();
-
-        //    return Ok();
-        //}
-        //catch
-        //{
-        //    return NotFound();
-        //}
-
-        var products = await _db.Products.AsNoTracking().ToListAsync();
-
-        if (products == null || !products.Any())
-        {
+        if (!products.Any())
             return NotFound(new { Message = "Товары не найдены" });
-        }
 
         return Ok(products);
 
@@ -140,17 +138,13 @@ public class ProductsController : ControllerBase
         {
             return NotFound();
         }
-        // найти продукт по id
-        // если нет → NotFound()
+
 
         _db.Products.Remove(itemfind);
 
         await _db.SaveChangesAsync();
 
-        return NoContent();  // 204 No Content — удалено, тело пустое
-        // удалить → _db.Products.Remove(...)
-        // сохранить
-        // вернуть Ok() или NoContent()
+        return NoContent();
     }
 
     [HttpGet("{id}")]
@@ -165,8 +159,18 @@ public class ProductsController : ControllerBase
         {
             return NotFound();
         }
+        ProductResponseDto res = new ProductResponseDto
+        {
+            Id = findItem.Id,
+            Name = findItem.Name,
+            Price = findItem.Price,
+            CategoryId = findItem.CategoryId,
+            CategoryName = findItem.category != null ? findItem.category.Name : "Без категории"
+        };
 
-        return Ok(findItem);
+        
+
+        return Ok(res);
 
     }
 
