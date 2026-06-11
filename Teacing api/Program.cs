@@ -12,7 +12,7 @@ builder.Services.AddControllers();
 
 
 builder.Services.AddFluentValidation(); 
-builder.Services.AddValidatorsFromAssemblyContaining<ProductDtoValidator>(); 
+builder.Services.AddValidatorsFromAssemblyContaining<CreateProductDtoValidator>(); 
 
 var app = builder.Build();
 

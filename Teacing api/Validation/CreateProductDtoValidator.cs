@@ -1,9 +1,9 @@
 ﻿using FluentValidation;
 using Teacing_api.Models;
 
-public class ProductDtoValidator : AbstractValidator<CreateProductDto>
+public class CreateProductDtoValidator : AbstractValidator<CreateProductDto>
 {
-    public ProductDtoValidator()
+    public CreateProductDtoValidator()
     {
         // Правило для Email: не пустой и должен быть корректным адресом
         RuleFor(Product => Product.Name)

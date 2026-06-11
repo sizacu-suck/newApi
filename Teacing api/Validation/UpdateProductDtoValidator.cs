@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 using Teacing_api.Models;
-namespace Teacing_api.Controllers
+namespace Teacing_api.Validation
 
 {
     public class UpdateProductDtoValidator: AbstractValidator<UpdateProductDto>

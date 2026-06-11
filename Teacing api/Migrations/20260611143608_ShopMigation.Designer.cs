@@ -11,8 +11,8 @@ using Teacing_api.Models;
 namespace Teacing_api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260609194001_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260611143608_ShopMigation")]
+    partial class ShopMigation
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

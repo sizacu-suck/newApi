@@ -31,7 +31,7 @@ public class ProductsController : ControllerBase
         //    return NotFound();
         //}
 
-        var products = await _db.Products.ToListAsync();
+        var products = await _db.Products.AsNoTracking().ToListAsync();
 
         if (products == null || !products.Any())
         {
@@ -62,6 +62,7 @@ public class ProductsController : ControllerBase
     {
         var products = await _db.Products
             .Where(p => p.Name.Contains(name))
+            .AsNoTracking()
             .ToListAsync();
 
         return Ok(products);
@@ -79,7 +80,9 @@ public class ProductsController : ControllerBase
         if (maxPrice.HasValue)
             query = query.Where(p => p.Price <= maxPrice.Value);
 
-        var products = await query.ToListAsync();
+        var products = await query
+            .AsNoTracking()
+            .ToListAsync();
         return Ok(products);
     }
 
@@ -87,6 +90,7 @@ public class ProductsController : ControllerBase
     public async Task<IActionResult> Top([FromQuery] int count = 5)
     {
         var products = await _db.Products
+            .AsNoTracking()
             .Take(count)
             .ToListAsync();
 
@@ -103,15 +107,8 @@ public class ProductsController : ControllerBase
             return NotFound();
         }
 
-        var product = new Product
-        {
-            Name = productVal.Name,
-            Price = productVal.Price
-        };
-
-
-        itemfind.Name = product.Name;
-        itemfind.Price = product.Price;
+        itemfind.Name = productVal.Name;
+        itemfind.Price = productVal.Price;
 
         await _db.SaveChangesAsync();
 
@@ -145,7 +142,9 @@ public class ProductsController : ControllerBase
     [HttpGet ("{id}")]
     public async Task<IActionResult>GetByID(int id)
     {
-        var findItem = await _db.Products.FindAsync(id);
+        var findItem = await _db.Products
+        .AsNoTracking()
+        .FirstOrDefaultAsync(p => p.Id == id);
 
         if (findItem == null)
         {
