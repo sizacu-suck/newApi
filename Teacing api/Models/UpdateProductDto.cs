@@ -1,10 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Teacing_api.Models
+﻿namespace Teacing_api.Models
 {
-    public class Product
+    public class UpdateProductDto
     {
-        [Key]
         public int Id { get; set; }
         public string Name { get; set; } = "";
         public decimal Price { get; set; }

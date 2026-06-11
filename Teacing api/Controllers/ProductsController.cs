@@ -19,14 +19,40 @@ public class ProductsController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
+
+        //try
+        //{
+        //    var products = await _db.Products.ToListAsync();
+
+        //    return Ok();
+        //}
+        //catch
+        //{
+        //    return NotFound();
+        //}
+
         var products = await _db.Products.ToListAsync();
+
+        if (products == null || !products.Any())
+        {
+            return NotFound(new { Message = "Товары не найдены" });
+        }
+
         return Ok(products);
+
+
     }
 
     // POST: api/products
     [HttpPost]
-    public async Task<IActionResult> Create(Product product)
+    public async Task<IActionResult> Create(CreateProductDto productVal)
     {
+        var product = new Product
+        {
+            Price = productVal.Price,
+            Name = productVal.Name
+        };
+
         _db.Products.Add(product);
         await _db.SaveChangesAsync();
         return Ok(product);
@@ -67,15 +93,22 @@ public class ProductsController : ControllerBase
         return Ok(products);
     }
 
-    [HttpPut("{id}")]
-    public async Task<IActionResult> Put(int id, [FromBody] Product product)
+    [HttpPut()]
+    public async Task<IActionResult> Put( [FromBody] UpdateProductDto productVal)
     {
-        var itemfind = await _db.Products.FindAsync(id);
+        var itemfind = await _db.Products.FindAsync(productVal.Id);
 
         if (itemfind == null)
         {
             return NotFound();
         }
+
+        var product = new Product
+        {
+            Name = productVal.Name,
+            Price = productVal.Price
+        };
+
 
         itemfind.Name = product.Name;
         itemfind.Price = product.Price;

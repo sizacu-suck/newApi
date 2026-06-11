@@ -7,12 +7,25 @@ POST {{Teacing_api_HostAddress}}/api/products
 Content-Type: application/json
 
 {
-    "name": "Книга",
-    "price": 500
+"name": "Наушники",
+  "price": -150.00
 }
 
 ###
 
 GET {{Teacing_api_HostAddress}}/api/products
+
+###
+
+
+PUT {{Teacing_api_HostAddress}}/api/products
+Content-Type: application/json
+
+
+{
+  "id":6,
+  "name": "Ноутбук",
+  "price": 75000.00
+}
 
 ###
