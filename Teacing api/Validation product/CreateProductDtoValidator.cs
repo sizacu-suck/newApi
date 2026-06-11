@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using Teacing_api.Models;
+using Teacing_api.Validation;
 
 public class CreateProductDtoValidator : AbstractValidator<CreateProductDto>
 {
@@ -13,6 +13,9 @@ public class CreateProductDtoValidator : AbstractValidator<CreateProductDto>
         // Правило для пароля: минимум 6 символов
         RuleFor(Product => Product.Price)
             .GreaterThan(0).WithMessage("Цена должна быть больше 0");
+
+        RuleFor(Product => Product.CategoryId)
+            .GreaterThan(0).WithMessage("Категория должна быть больше 0");
     }
 }
 

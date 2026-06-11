@@ -2,30 +2,28 @@
 @Teacing_api_HostAddress = http://localhost:5099
 
 
-
 POST {{Teacing_api_HostAddress}}/api/products
 Content-Type: application/json
 
 {
-"name": "Наушники",
-  "price": -150.00
+"name": "Космический корабль",
+  "price": 9999999,
+  "categoryId": 102
 }
 
 ###
 
 GET {{Teacing_api_HostAddress}}/api/products
 
+
+
+
+
 ###
 
-
-PUT {{Teacing_api_HostAddress}}/api/products
+POST {{Teacing_api_HostAddress}}/api/catrgories
 Content-Type: application/json
-
-
 {
-  "id":6,
-  "name": "Ноутбук",
-  "price": 75000.00
+  "name": ""
 }
-
 ###

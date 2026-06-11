@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Teacing_api.Models;
+using Teacing_api.Validation;
 
 namespace Teacing_api.Controllers;
 
@@ -50,8 +51,19 @@ public class ProductsController : ControllerBase
         var product = new Product
         {
             Price = productVal.Price,
-            Name = productVal.Name
+            Name = productVal.Name,
+            CategoryId = productVal.CategoryId
         };
+
+
+        var ChrckCategory = await _db.Category.FirstOrDefaultAsync(x => x.Id == productVal.CategoryId);
+
+        if (ChrckCategory == null)
+        {
+            return BadRequest(new { Message = $"Категории с Id = {productVal.CategoryId} не существует!" });
+        }
+
+
 
         _db.Products.Add(product);
         await _db.SaveChangesAsync();
@@ -63,6 +75,7 @@ public class ProductsController : ControllerBase
         var products = await _db.Products
             .Where(p => p.Name.Contains(name))
             .AsNoTracking()
+            .Include(p => p.category)
             .ToListAsync();
 
         return Ok(products);
@@ -98,7 +111,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpPut()]
-    public async Task<IActionResult> Put( [FromBody] UpdateProductDto productVal)
+    public async Task<IActionResult> Put([FromBody] UpdateProductDto productVal)
     {
         var itemfind = await _db.Products.FindAsync(productVal.Id);
 
@@ -109,6 +122,7 @@ public class ProductsController : ControllerBase
 
         itemfind.Name = productVal.Name;
         itemfind.Price = productVal.Price;
+        itemfind.CategoryId = productVal.CategoryId;
 
         await _db.SaveChangesAsync();
 
@@ -139,17 +153,18 @@ public class ProductsController : ControllerBase
         // вернуть Ok() или NoContent()
     }
 
-    [HttpGet ("{id}")]
-    public async Task<IActionResult>GetByID(int id)
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetByID(int id)
     {
         var findItem = await _db.Products
         .AsNoTracking()
+        .Include(p => p.category)
         .FirstOrDefaultAsync(p => p.Id == id);
 
         if (findItem == null)
         {
             return NotFound();
-        }    
+        }
 
         return Ok(findItem);
 

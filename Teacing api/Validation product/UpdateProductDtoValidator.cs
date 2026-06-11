@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using Teacing_api.Models;
 namespace Teacing_api.Validation
 
 {
@@ -14,6 +13,8 @@ namespace Teacing_api.Validation
                 .GreaterThan(0).WithMessage("Цена должна быть больше 0");
             RuleFor(product => product.Id)
                 .GreaterThan(0).WithMessage("Id должно быть больше 0");
+            RuleFor(Product => Product.CategoryId)
+    .GreaterThan(0).WithMessage("Категория должна быть больше 0");
         }
     }
 }
