@@ -70,7 +70,7 @@ public class ProductsController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Put(int id, [FromBody] Product product)
     {
-        var itemfind = await _db.Products.FindAsync(product.Id);
+        var itemfind = await _db.Products.FindAsync(id);
 
         if (itemfind == null)
         {
