@@ -17,35 +17,105 @@ public class ProductsController : ControllerBase
         _db = db;
     }
 
-    // GET: api/products
+    //[HttpGet]
+    //public async Task<IActionResult> GetAll()
+    //{
+    //    var products = await _db.Products
+    //.Include(p => p.category)
+    //.AsNoTracking()
+    //.Select(p => new ProductResponseDto
+    //{
+    //    Id = p.Id,
+    //    Name = p.Name,
+    //    Price = p.Price,
+    //    CategoryId = p.CategoryId,
+    //    CategoryName = p.category != null ? p.category.Name : "Без категории"
+    //})
+    //.ToListAsync();
+
+    //    if (!products.Any())
+    //        return NotFound(new { Message = "Товары не найдены" });
+
+    //    return Ok(products);
+
+
+    //}
+
+
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll(
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 10,
+    [FromQuery] string? search = null,
+    [FromQuery] decimal? minPrice = null,
+    [FromQuery] decimal? maxPrice = null)
     {
-        var products = await _db.Products
-    .Include(p => p.category)
-    .AsNoTracking()
-    .Select(p => new ProductResponseDto
-    {
-        Id = p.Id,
-        Name = p.Name,
-        Price = p.Price,
-        CategoryId = p.CategoryId,
-        CategoryName = p.category != null ? p.category.Name : "Без категории"
-    })
-    .ToListAsync();
+        // 1. Если page меньше 1 -> принудительно делаем page = 1
+        // 2. Если pageSize меньше 1 -> принудительно делаем pageSize = 10
+        // 3. Если pageSize больше 50 -> принудительно делаем pageSize = 50
 
-        if (!products.Any())
-            return NotFound(new { Message = "Товары не найдены" });
-
-        return Ok(products);
+        if (page < 1)
+            page = 1;
+        if (pageSize <1)
+            pageSize = 10;
+        if(pageSize >50)
+            pageSize = 50;
 
 
+        // 1. Создаем базовый запрос к таблице Products (без выполнения)
+        IQueryable<Product> query = _db.Products.AsNoTracking();
+
+        // 2. ТВОЙ КОД: Фильтрация по minPrice (если оно передано)
+        if (minPrice.HasValue)
+        {
+             query = query.Where(x => x.Price >= minPrice);
+        }
+
+        // 3. ТВОЙ КОД: Фильтрация по maxPrice (если оно передано)
+        if (maxPrice.HasValue)
+        {
+            query = query.Where(x=> x.Price<=maxPrice);
+        }
+
+        // 4. ТВОЙ КОД: Поиск по названию товара (если search не пустой)
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            // Подсказка: переведи search в ToLower() и используй Contains()
+            query = query.Where(x=> x.Name.ToLower().Contains(search.ToLower()));
+        }
+
+        // 5. ТВОЙ КОД: Пагинация и Проекция в ProductResponseDto
+        var productsDto = await query
+            .Skip((page-1)*pageSize)
+            .Take(pageSize)
+            .Select(p => new ProductResponseDto {
+                Id = p.Id,
+                Name = p.Name,
+                Price = p.Price,
+                CategoryId = p.CategoryId,
+                CategoryName = p.category != null ? p.category.Name : "Без категории"
+            })
+            .ToListAsync(); // Только тут запрос уйдет в SQL Server
+
+        // 6. Проверка на пустоту и возврат результата
+        if (!productsDto.Any())
+        {
+            return NotFound(new { Message = "Товары по заданным фильтрам не найдены" });
+        }
+
+        return Ok(productsDto);
     }
 
-    // POST: api/products
+
     [HttpPost]
     public async Task<IActionResult> Create(CreateProductDto productVal)
     {
+                bool categoryExists = await _db.Category.AnyAsync(x => x.Id == productVal.CategoryId);
+
+        if (!categoryExists)
+        {
+            return BadRequest(new { Message = $"Категории с Id = {productVal.CategoryId} не существует!" });
+        }
         var product = new Product
         {
             Price = productVal.Price,
@@ -54,12 +124,7 @@ public class ProductsController : ControllerBase
         };
 
 
-        var ChrckCategory = await _db.Category.FirstOrDefaultAsync(x => x.Id == productVal.CategoryId);
 
-        if (ChrckCategory == null)
-        {
-            return BadRequest(new { Message = $"Категории с Id = {productVal.CategoryId} не существует!" });
-        }
 
 
 
@@ -67,46 +132,7 @@ public class ProductsController : ControllerBase
         await _db.SaveChangesAsync();
         return Ok(product);
     }
-    [HttpGet("search")]
-    public async Task<IActionResult> Search([FromQuery] string name)
-    {
-        var products = await _db.Products
-            .Where(p => p.Name.Contains(name))
-            .AsNoTracking()
-            .Include(p => p.category)
-            .ToListAsync();
-
-        return Ok(products);
-    }
-    [HttpGet("filter")]
-    public async Task<IActionResult> Filter(
-    [FromQuery] decimal? minPrice,
-    [FromQuery] decimal? maxPrice)
-    {
-        var query = _db.Products.AsQueryable();
-
-        if (minPrice.HasValue)
-            query = query.Where(p => p.Price >= minPrice.Value);
-
-        if (maxPrice.HasValue)
-            query = query.Where(p => p.Price <= maxPrice.Value);
-
-        var products = await query
-            .AsNoTracking()
-            .ToListAsync();
-        return Ok(products);
-    }
-
-    [HttpGet("top")]
-    public async Task<IActionResult> Top([FromQuery] int count = 5)
-    {
-        var products = await _db.Products
-            .AsNoTracking()
-            .Take(count)
-            .ToListAsync();
-
-        return Ok(products);
-    }
+    
 
     [HttpPut()]
     public async Task<IActionResult> Put([FromBody] UpdateProductDto productVal)
@@ -117,7 +143,12 @@ public class ProductsController : ControllerBase
         {
             return NotFound();
         }
+        bool categoryExists = await _db.Category.AnyAsync(x => x.Id == productVal.CategoryId);
 
+        if (!categoryExists)
+        {
+            return BadRequest(new { Message = $"Категории с Id = {productVal.CategoryId} не существует!" });
+        }
         itemfind.Name = productVal.Name;
         itemfind.Price = productVal.Price;
         itemfind.CategoryId = productVal.CategoryId;
@@ -152,25 +183,25 @@ public class ProductsController : ControllerBase
     {
         var findItem = await _db.Products
         .AsNoTracking()
-        .Include(p => p.category)
-        .FirstOrDefaultAsync(p => p.Id == id);
+        .Where(p => p.Id == id)
+        .Select(p => new ProductResponseDto
+        {
+            Id = p.Id,
+            Name = p.Name,
+            Price = p.Price,
+            CategoryId = p.CategoryId,
+            CategoryName = p.category != null ? p.category.Name : "Без категории"
+        })
+        .FirstOrDefaultAsync();
 
         if (findItem == null)
         {
             return NotFound();
         }
-        ProductResponseDto res = new ProductResponseDto
-        {
-            Id = findItem.Id,
-            Name = findItem.Name,
-            Price = findItem.Price,
-            CategoryId = findItem.CategoryId,
-            CategoryName = findItem.category != null ? findItem.category.Name : "Без категории"
-        };
 
         
 
-        return Ok(res);
+        return Ok(findItem);
 
     }
 

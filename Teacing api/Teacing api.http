@@ -16,13 +16,6 @@ Content-Type: application/json
 GET {{Teacing_api_HostAddress}}/api/products
 ###
 
-POST {{Teacing_api_HostAddress}}/api/catrgories
-Content-Type: application/json
-{
-  "name": ""
-}
-###
-
 GET {{Teacing_api_HostAddress}}/api/categories
 
 ###

@@ -85,6 +85,13 @@ namespace Teacing_api.Controllers
                 return NotFound(new { Message = "Категория для удаления не найдена" });
             }
 
+            bool ProductFind = await _db.Products.AnyAsync(x=> id == x.CategoryId);
+
+            if(ProductFind)
+            {
+                return BadRequest(new { Message = "Нельзя удалить категорию, пока в ней есть товары!" });
+            }
+
             _db.Category.Remove(findItem);
 
             await _db.SaveChangesAsync();
