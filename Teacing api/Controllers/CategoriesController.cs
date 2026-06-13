@@ -38,10 +38,12 @@ namespace Teacing_api.Controllers
         {
             var findAll = await _db.Category.AsNoTracking().ToListAsync();
 
+
             if (!findAll.Any())
             {
                 return NotFound(new { Message = "Категории не найдены" });
             }
+
 
             return Ok(findAll);
 
@@ -89,7 +91,7 @@ namespace Teacing_api.Controllers
 
             if(ProductFind)
             {
-                return BadRequest(new { Message = "Нельзя удалить категорию, пока в ней есть товары!" });
+                return BadRequest(new { Message = "Нельзя удалить категорию, пока в ней есть товары" });
             }
 
             _db.Category.Remove(findItem);

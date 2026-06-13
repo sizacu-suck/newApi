@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Teacing_api.Models;
 using Teacing_api.Validation;
@@ -41,7 +42,7 @@ public class ProductsController : ControllerBase
 
     //}
 
-
+    [Authorize]
     [HttpGet]
     public async Task<IActionResult> GetAll(
     [FromQuery] int page = 1,
@@ -50,10 +51,6 @@ public class ProductsController : ControllerBase
     [FromQuery] decimal? minPrice = null,
     [FromQuery] decimal? maxPrice = null)
     {
-        // 1. Если page меньше 1 -> принудительно делаем page = 1
-        // 2. Если pageSize меньше 1 -> принудительно делаем pageSize = 10
-        // 3. Если pageSize больше 50 -> принудительно делаем pageSize = 50
-
         if (page < 1)
             page = 1;
         if (pageSize <1)
@@ -61,30 +58,23 @@ public class ProductsController : ControllerBase
         if(pageSize >50)
             pageSize = 50;
 
-
-        // 1. Создаем базовый запрос к таблице Products (без выполнения)
         IQueryable<Product> query = _db.Products.AsNoTracking();
 
-        // 2. ТВОЙ КОД: Фильтрация по minPrice (если оно передано)
         if (minPrice.HasValue)
         {
              query = query.Where(x => x.Price >= minPrice);
         }
 
-        // 3. ТВОЙ КОД: Фильтрация по maxPrice (если оно передано)
         if (maxPrice.HasValue)
         {
             query = query.Where(x=> x.Price<=maxPrice);
         }
 
-        // 4. ТВОЙ КОД: Поиск по названию товара (если search не пустой)
         if (!string.IsNullOrWhiteSpace(search))
         {
-            // Подсказка: переведи search в ToLower() и используй Contains()
             query = query.Where(x=> x.Name.ToLower().Contains(search.ToLower()));
         }
 
-        // 5. ТВОЙ КОД: Пагинация и Проекция в ProductResponseDto
         var productsDto = await query
             .Skip((page-1)*pageSize)
             .Take(pageSize)
@@ -95,9 +85,8 @@ public class ProductsController : ControllerBase
                 CategoryId = p.CategoryId,
                 CategoryName = p.category != null ? p.category.Name : "Без категории"
             })
-            .ToListAsync(); // Только тут запрос уйдет в SQL Server
+            .ToListAsync(); 
 
-        // 6. Проверка на пустоту и возврат результата
         if (!productsDto.Any())
         {
             return NotFound(new { Message = "Товары по заданным фильтрам не найдены" });
@@ -110,7 +99,7 @@ public class ProductsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(CreateProductDto productVal)
     {
-                bool categoryExists = await _db.Category.AnyAsync(x => x.Id == productVal.CategoryId);
+        bool categoryExists = await _db.Category.AnyAsync(x => x.Id == productVal.CategoryId);
 
         if (!categoryExists)
         {
@@ -122,17 +111,10 @@ public class ProductsController : ControllerBase
             Name = productVal.Name,
             CategoryId = productVal.CategoryId
         };
-
-
-
-
-
-
         _db.Products.Add(product);
         await _db.SaveChangesAsync();
         return Ok(product);
     }
-    
 
     [HttpPut()]
     public async Task<IActionResult> Put([FromBody] UpdateProductDto productVal)
@@ -155,7 +137,6 @@ public class ProductsController : ControllerBase
 
         await _db.SaveChangesAsync();
 
-
         return Ok();
     }
 
@@ -169,8 +150,6 @@ public class ProductsController : ControllerBase
         {
             return NotFound();
         }
-
-
         _db.Products.Remove(itemfind);
 
         await _db.SaveChangesAsync();
@@ -202,7 +181,5 @@ public class ProductsController : ControllerBase
         
 
         return Ok(findItem);
-
     }
-
 }
