@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -22,14 +23,10 @@ namespace Teacing_api.Controllers
         {
             var findCategory = await _db.Category.AsNoTracking()
         .FirstOrDefaultAsync(p => p.Id == id);
-
-
             if (findCategory == null)
             {
                 return NotFound();
             }
-
-
             return Ok(findCategory);
         }
 
@@ -48,7 +45,7 @@ namespace Teacing_api.Controllers
             return Ok(findAll);
 
         }
-
+        [Authorize(Roles = "User,Admin")]
         [HttpPut]
         public async Task<IActionResult> Put([FromBody] UpdateCategoryDto updateCategoryDto)
         {
@@ -66,18 +63,16 @@ namespace Teacing_api.Controllers
             await _db.SaveChangesAsync();
             return Ok(categoryFind);
         }
-
+        [Authorize(Roles = "User,Admin")]
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] CreateCategoryDto createCategoryDto)
         {
-            var category = new Category { Name = createCategoryDto.Name }; ;
-
-
-
+            var category = new Category { Name = createCategoryDto.Name };
             _db.Category.Add(category);
             await _db.SaveChangesAsync();
             return Ok(category);
         }
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete (int id)
         {

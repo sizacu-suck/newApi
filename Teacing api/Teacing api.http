@@ -1,4 +1,4 @@
-@Teacing api_HostAddress = http://localhost:5099
+@Teacing api_HostAddress = https://localhost:7166
 @Teacing_api_HostAddress = http://localhost:5099
 
 
@@ -12,7 +12,13 @@ Content-Type: application/json
 }
 
 ###
-
+POST {{Teacing_api_HostAddress}}/api/auth/login
+Content-Type: application/json
+{
+  "username": "admin",
+  "password": "12345"
+}
+###
 GET {{Teacing_api_HostAddress}}/api/products
 ###
 
@@ -30,5 +36,14 @@ GET {{Teacing_api_HostAddress}}/api/categories/3
 ###
 
 GET {{Teacing api_HostAddress}}/api/categories
+
+###
+
+POST {{Teacing api_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  //LoginDto
+}
 
 ###

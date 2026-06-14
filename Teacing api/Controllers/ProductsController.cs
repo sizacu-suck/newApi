@@ -42,7 +42,7 @@ public class ProductsController : ControllerBase
 
     //}
 
-    [Authorize]
+
     [HttpGet]
     public async Task<IActionResult> GetAll(
     [FromQuery] int page = 1,
@@ -53,39 +53,40 @@ public class ProductsController : ControllerBase
     {
         if (page < 1)
             page = 1;
-        if (pageSize <1)
+        if (pageSize < 1)
             pageSize = 10;
-        if(pageSize >50)
+        if (pageSize > 50)
             pageSize = 50;
 
         IQueryable<Product> query = _db.Products.AsNoTracking();
 
         if (minPrice.HasValue)
         {
-             query = query.Where(x => x.Price >= minPrice);
+            query = query.Where(x => x.Price >= minPrice);
         }
 
         if (maxPrice.HasValue)
         {
-            query = query.Where(x=> x.Price<=maxPrice);
+            query = query.Where(x => x.Price <= maxPrice);
         }
 
         if (!string.IsNullOrWhiteSpace(search))
         {
-            query = query.Where(x=> x.Name.ToLower().Contains(search.ToLower()));
+            query = query.Where(x => x.Name.ToLower().Contains(search.ToLower()));
         }
 
         var productsDto = await query
-            .Skip((page-1)*pageSize)
+            .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .Select(p => new ProductResponseDto {
+            .Select(p => new ProductResponseDto
+            {
                 Id = p.Id,
                 Name = p.Name,
                 Price = p.Price,
                 CategoryId = p.CategoryId,
                 CategoryName = p.category != null ? p.category.Name : "Без категории"
             })
-            .ToListAsync(); 
+            .ToListAsync();
 
         if (!productsDto.Any())
         {
@@ -95,7 +96,7 @@ public class ProductsController : ControllerBase
         return Ok(productsDto);
     }
 
-
+    [Authorize(Roles = "User,Admin")]
     [HttpPost]
     public async Task<IActionResult> Create(CreateProductDto productVal)
     {
@@ -115,7 +116,7 @@ public class ProductsController : ControllerBase
         await _db.SaveChangesAsync();
         return Ok(product);
     }
-
+    [Authorize(Roles = "User,Admin")]
     [HttpPut()]
     public async Task<IActionResult> Put([FromBody] UpdateProductDto productVal)
     {
@@ -140,7 +141,7 @@ public class ProductsController : ControllerBase
         return Ok();
     }
 
-
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
@@ -178,7 +179,7 @@ public class ProductsController : ControllerBase
             return NotFound();
         }
 
-        
+
 
         return Ok(findItem);
     }
